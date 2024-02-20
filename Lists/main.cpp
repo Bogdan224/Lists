@@ -1,10 +1,8 @@
 ﻿#include<iostream>
 #include<stdio.h>
-
-
 /*
 Реализовать функции для обработки списка(по варианту) : ​​​
--Найти среднее арифметическое значение элементов списка
+-
 -Определить, входит ли список L1 в L2. Вернуть адрес начала вхождения (нулевой адрес в противном случае).
 */
 struct Item
@@ -13,8 +11,9 @@ struct Item
 	Item* next;
 };
 
-void Push_back(int value, Item** item) {
+int ListSize(Item* item);
 
+void Push_back(int value, Item** item) {
 	if (*item == NULL) {
 		*item = (Item*)malloc(sizeof(Item));
 		(*item)->value = value;
@@ -27,6 +26,7 @@ void Push_back(int value, Item** item) {
 }
 
 Item* GetItemByPos(int pos, Item* item) {
+	//Неверный ввод позиции
 	if (pos <= 0) {
 		printf("Enter position > 0\n");
 		return NULL;
@@ -65,52 +65,64 @@ int GetValueByPos(int pos, Item* item) {
 }
 
 Item* Push(int value, int pos, Item** item) {
+	//Неверный ввод позиции
 	if (pos <= 0) {
 		printf("Enter position > 0\n");
 		return *item;
 	}
-	if (pos == 1) {
+	//Если нужно добавить объект в начало, создаем новый объект и присваем в "next" наш список
+	else if (pos == 1) {
 		Item* tmp = (Item*)malloc(sizeof(Item));
 		tmp->value = value;
 		tmp->next = *item;
 		return tmp;
 	}
+	//Неверный ввод позиции
+	else if (pos > ListSize(*item)) {
+		printf("Enter position > list size\n");
+		return *item;
+	}
+	//Создаем два указателя, в которых хранятся объект, на место которого мы хотим поставить наш объект и предыдущий от него объект
 	Item* pred = GetItemByPos(pos - 1, *item);
 	Item* next = GetItemByPos(pos, *item);
+	//Проверка на null предыдущего объекта
 	if (GetItemByPos(pos-1, *item) != NULL) {
+		//Выделяем память для нового объекта, предыдущий пересвязываем с новым и к новому добавляем ссылку на следующий
 		Item* newItem = (Item*)malloc(sizeof(Item));
 		newItem->value = value;
 		pred->next = newItem;
 		newItem->next = next;
-		return *item;
 	}
-	else
-	{
-		return *item;
-	}
+	return *item;
 }
 
 Item* Pop(int pos, Item** item) {
+	//Неверный ввод позиции
 	if (pos <= 0) {
 		printf("Enter position > 0\n");
 		return *item;
 	}
-	if (pos == 1) {
+	//Если нужно удалить первый объект, сохраняем указатель на второй объект и удаляем первый 
+	else if (pos == 1) {
 		Item* tmp = (*item)->next;
 		free(*item);
 		return tmp;
 	}
+	//Неверный ввод позиции
+	else if (pos > ListSize(*item)) {
+		printf("Enter position > list size\n");
+		return *item;
+	}
+	//Создаем два указателя, в которых хранятся предыдущий и следующий объект от выбранного
 	Item* pred = GetItemByPos(pos - 1, *item);
 	Item* next = GetItemByPos(pos + 1, *item);
+	//Проверка на null предыдущего объекта
 	if (GetItemByPos(pos - 1, *item) != NULL) {
+		//Освобождаем память выбранного объекта и связываем предыдущий со следующим объектом
 		free(GetItemByPos(pos, *item));
 		pred->next = next;
-		return *item;
 	}
-	else
-	{
-		return *item;
-	}
+	return *item;
 }
 
 int ListSize(Item* item) {
@@ -131,6 +143,19 @@ void PrintList(Item* item) {
 	printf("\n");
 }
 
+//Найти среднее арифметическое значение элементов списка
+float ArithmeticMean(Item* item) {
+	int result = 0, size = ListSize(item);
+
+	while (item != NULL) {
+		result += item->value;
+		item = item->next;
+	}
+
+	return result / size;
+}
+
+
 int main() {
 	Item* arr = (Item*)malloc(sizeof(Item));
 	arr->value = 0;
@@ -147,5 +172,9 @@ int main() {
 	arr = Pop(3,&arr);
 	PrintList(arr);
 	printf("%d\n", ListSize(arr));
+
+	printf("The Arithmetic mean: %f\n", ArithmeticMean(arr));
+
+	free(arr);
 	return 0;
 }
